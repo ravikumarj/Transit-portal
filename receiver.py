@@ -4,6 +4,10 @@ import socket,time
 from SimpleXMLRPCServer import SimpleXMLRPCServer
 import signal
 import sys
+import uuid
+def getUniqueId():
+    return uuid.uuid1()
+
 
 def signal_handler(signal, frame):
     print 'You pressed Ctrl+C!'
@@ -11,7 +15,11 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 def announce(msg):
+    uid=getUniqueId()
+    msg=msg+" "+str(uid)
+    #print msg
     sock.send(msg)
+    return str(uid)
 
 #    os.system("python ctrlpfx.py --prefix 236 --mux wisc --poison 72")
 
