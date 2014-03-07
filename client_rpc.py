@@ -14,16 +14,8 @@ def getUid():
     return uid
 
 
-def getPfx(uid):
-    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
-    with con:
-        cur = con.cursor()
-        cur.execute("SELECT pfx FROM pfx where TransactionId='"+str(uid)+"'")
-        row = cur.fetchone()
-        return row[0]
-
-
 def main(argv):
+   pfx_g=None
    proxy = xmlrpclib.ServerProxy("http://localhost:8000/")
    print "Try announcing from client"
 
@@ -31,7 +23,7 @@ def main(argv):
    inputfile = ''
    outputfile = ''
    try:
-      opts, args = getopt.getopt(argv,"ha:w:p:",["announce=","withdraw=","poison="])
+      opts, args = getopt.getopt(argv,"ha:wp:c",["announce=","withdraw=","poison=","check="])
    except getopt.GetoptError:
       print 'client.py -a <MUX>'
       sys.exit(2)
@@ -45,10 +37,21 @@ def main(argv):
          saveUid(uid)
       elif opt in ("-w", "--withdraw"):#MUX
          uid=getUid()
-         mux=arg
-         pfx=getPfx(str(uid))
+         #mux=arg
+         #pfx=getPfx(str(uid))
+	 pfx=proxy.check(uid)
          print pfx
-	 proxy.announce('withdraw '+str(pfx)+' WISC')
+	 if pfx is not None:
+	     proxy.announce('withdraw '+str(pfx)+' WISC')
+	 else:
+             print "No announcement made to withdraw"
+      elif opt in ("-c","--check"):
+          uid1=getUid()
+	  pfx_g=proxy.check(uid1)
+          if pfx_g is None:
+	      print "No prefix available for this Transaction ID"
+          else:
+              print "PFx used %d"%pfx_g
 
 if __name__ == "__main__":
    main(sys.argv[1:])

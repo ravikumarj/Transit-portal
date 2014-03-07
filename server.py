@@ -6,15 +6,23 @@ import ctrlpfx_new
 import MySQLdb as mdb
 MUXES=('GATECH','WISC','CLEMSON','PRINCE','UW','AMSIX','ISI')
 
-PREFIXES = range(236, 238)
+PREFIXES = range(236, 239)
 
 
-def updateDB(pfx,trans_id):
+def updateDB_announce(pfx,trans_id):
     con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
     with con:
         cur = con.cursor()
         cur.execute("UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx))
+	print "UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx)
     
+
+def updateDB_withdraw(pfx):
+    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    with con:
+        cur = con.cursor()
+        cur.execute("UPDATE pfx SET TransactionId=NULL,Availability=1 where PFX = "+str(pfx))
+
 
 def Announce(pfx,mux):
     print "Using pfx .."+str(pfx)
@@ -68,7 +76,7 @@ while True:
 	    if pfx is not None:
 		if((pfx in PREFIXES)and((mux in MUXES)or(mux =='all'))):
 		    Announce(pfx,mux)
-		    updateDB(pfx,trans_id)
+		    updateDB_announce(pfx,trans_id)
 	    else:
 		print "No prefixes avaialble for advertisement"
     		print "Request is queued"
@@ -76,8 +84,10 @@ while True:
 	
         if msg[0] == 'withdraw':
             print 'withdrawing'
-	    ctrlpfx_new.withdraw(int(msg[1]),msg[2]) 
+	    ctrlpfx_new.withdraw(int(msg[1]),msg[2]) #pfx,MUX
+	    updateDB_withdraw(int(msg[1]))
         if msg[0] == 'poison':
 	    print 'Poisoning'
-	    ctrlpfx_new.poison(int(msg[1]),msg[2])   
+	    ctrlpfx_new.poison(int(msg[1]),msg[2]) 
+            #updateDB(int(msg[1]))
     clientSocket.close()
