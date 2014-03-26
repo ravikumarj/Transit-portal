@@ -14,7 +14,7 @@ def updateDB_announce(pfx,trans_id):
     with con:
         cur = con.cursor()
         cur.execute("UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx))
-	print "UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx)
+	#print "UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx)
     
 
 def updateDB_withdraw(pfx):
@@ -25,7 +25,7 @@ def updateDB_withdraw(pfx):
 
 
 def Announce(pfx,mux):
-    print "Using pfx .."+str(pfx)
+    print "Prefix Used for annoucement "+str(pfx)
     if mux == "all":
         for muxl in MUXES:
 	    ctrlpfx_new.announce(int(pfx),muxl) 
@@ -68,13 +68,19 @@ while True:
         req = clientSocket.recv(100)
         if not req: break # client closed connection
         msg = req.split()
-        if msg[0] == 'announce':
-	    print 'Announcing'
+        if msg[0] == 'announce' or msg[0] == 'research':
             pfx=getfree_pfx()
 	    mux=msg[1]
 	    trans_id=msg[2]
 	    if pfx is not None:
 		if((pfx in PREFIXES)and((mux in MUXES)or(mux =='all'))):
+		    if trans_id=='Default':
+		        print "Announcing Default Beacon Request"
+		    else:
+		        if msg[0] =='announce':	
+			    print "Announcing User Request"
+			else:
+			    print "Announing Research Request"
 		    Announce(pfx,mux)
 		    updateDB_announce(pfx,trans_id)
 	    else:

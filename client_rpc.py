@@ -17,13 +17,12 @@ def getUid():
 def main(argv):
    pfx_g=None
    proxy = xmlrpclib.ServerProxy("http://localhost:8000/")
-   print "Try announcing from client"
 
     
    inputfile = ''
    outputfile = ''
    try:
-      opts, args = getopt.getopt(argv,"ha:wp:c",["announce=","withdraw=","poison=","check="])
+      opts, args = getopt.getopt(argv,"ha:wp:cr:",["announce=","withdraw=","poison=","check=","research="])
    except getopt.GetoptError:
       print 'client.py -a <MUX>'
       sys.exit(2)
@@ -32,9 +31,30 @@ def main(argv):
          print 'client.py -a <MUX>'
          sys.exit()
       elif opt in ("-a", "--announce"):
-         mux = arg
-	 uid=proxy.announce('announce '+str(mux)) 
-         saveUid(uid)
+         info=arg.split(":")
+         if len(info)<2:
+ 	     print "Invalid Arguments! Please refer user guide for usage information"
+	 else:
+             mux = info[0]
+             username=info[1]
+ 
+	     response=proxy.announce('announce '+str(mux)+' ' +username) 
+	     res=response.split(",")
+	 
+             saveUid(res[0])
+	     print res[1]
+      elif opt in("-r","--research"):
+	 info=arg.split(":")
+         if len(info)<2:
+             print "Invalid Arguments! Please refer user guide for usage information"
+         else:
+	     mux = info[0]
+	     username=info[1]
+             response=proxy.priority_announce('research '+str(mux)+' '+username)
+             res=response.split(",")
+
+             saveUid(res[0])
+             print res[1]
       elif opt in ("-w", "--withdraw"):#MUX
          uid=getUid()
          #mux=arg
@@ -44,7 +64,7 @@ def main(argv):
 	 if pfx is not None:
 	     proxy.announce('withdraw '+str(pfx)+' WISC')
 	 else:
-             print "No announcement made to withdraw"
+             print "No announcements made from this client that can be withdrawn"
       elif opt in ("-c","--check"):
           uid1=getUid()
 	  pfx_g=proxy.check(uid1)

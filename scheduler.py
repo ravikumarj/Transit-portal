@@ -10,6 +10,9 @@ import Queue
 import threading
 import time
 from Queue import PriorityQueue
+
+#Three different classes of priority. These variables keep track number of requests 
+#in each priority class.
 p1=0
 p2=0
 p3=0
@@ -65,6 +68,19 @@ class MyPriorityQueue(PriorityQueue):
 	    p3=p3-1
         return item
 
+
+def authenticate(username,group):
+    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT username FROM users where username= '"+username+"' and user_group= '"+group+"'")
+        rows = cur.fetchall()
+        if len(rows)>=1:
+	    return 'true'
+	else:
+	    return 'false'
+    
+
 #will be exposed to both normal users and researchers
 #Writes the request to the priority queue
 def announce(msg):
@@ -73,29 +89,38 @@ def announce(msg):
     global p3
     global pos_user
 
+    str1=msg.split(" ")
+    print len(str1)
+    if len(str1)<3:
+	response="None,Invalid Arguments!Please refer user guide for usage information"
+        return response
     threadLock.acquire()
-    str1=msg
-    print msg
+    #print msg
     #if str1[0] == "check":
     #print "calling check"
     uid=getUniqueId()
-    pfx_count=checkPfx()
-    msg=msg+" "+str(uid)
-    reqQueue.put(msg,2) #priority for users
-    #cycle=(p1/pfx_count)+(((p1%pfx_count)+p2)/pfx_count)
-    if (p1+p2)%pfx_count == 0 and p2 !=0:
-        cycle=(p1+p2/pfx_count)-1
-    else:
-	cycle=(p1+p2/pfx_count)
-    pos_user=pos_user+1    
-    user_map[uid]=pos_user
-    print "p1 == "+str(p1)
-    print "p2 == "+str(p2)
-    print "pfx_count = "+ str(pfx_count)
+    if authenticate(str1[2],'user')== 'true':
+    	pfx_count=checkPfx()
+	msg=str1[0]+" "+str1[1]+" "+str(uid)
+    	reqQueue.put(msg,2) #priority for users
+    	#cycle=(p1/pfx_count)+(((p1%pfx_count)+p2)/pfx_count)
+    	if (p1+p2)%pfx_count == 0 and p2 !=0:
+        	cycle=((p1+p2)/pfx_count)-1
+    	else:
+		cycle=((p1+p2)/pfx_count)
+    	pos_user=pos_user+1    
+    	user_map[uid]=pos_user
+    	#print "p1 == "+str(p1)
+    	#print "p2 == "+str(p2)
+    	#print "pfx_count = "+ str(pfx_count)
     
-    print "Request will be scheduled and will annouced after " + str(cycle)
-    sch_time="Request will be scheduled and will annouced after " +str(cycle)
-    response=str(uid)+","+sch_time;
+    	#print "Request will be scheduled and will annouced after " + str(cycle)
+    	sch_time="Request is queued and is scheduled to be annouced with in " +str((cycle+1)*1.5)+" hours"
+    	response=str(uid)+","+sch_time;
+    else:
+        response="You are not Authorized to make this request.Contact NSL for more information."
+        response=str(uid)+","+response;
+
     threadLock.release() 
     return response
 
@@ -107,23 +132,35 @@ def priority_announce(msg):
     global p3
     global pos_research
 
-    threadLock.acquire()
     str1=msg.split(" ")
-    print msg
-    print str1[0]
+    #print len(str1)
+    if len(str1)<3:
+        response="None,Invalid Arguments!Please refer user guide for usage information"
+        return response
+    threadLock.acquire()
+    #print msg
+    #print str1[0]
     #if str1[0] == "check":
     #print "calling check"
+    print len(str1)
     uid=getUniqueId()
-    pos_research=pos_research+1
-    research_map[uid]=pos_research
-    pfx_count=checkPfx()
-    msg=msg+" "+str(uid)
-    reqQueue.put(msg,1) #priority for researchers
-    cycle=p1/pfx_count
-    print "Request will be scheduled and will annouced after " + str(cycle)
-    sch_time="Request will be scheduled and will annouced after "+str(cycle)
-    response=str(uid)+","+sch_time;
-    threadLock.release() 
+    if authenticate(str1[2],'research')== 'true':
+    	pos_research=pos_research+1
+    	research_map[uid]=pos_research
+    	pfx_count=checkPfx()
+    	msg=str1[0]+" "+str1[1]+" "+str(uid)
+    	reqQueue.put(msg,1) #priority for researchers
+    	if (p1)%pfx_count == 0:
+        	cycle=(p1/pfx_count)-1
+    	else:
+        	cycle=(p1/pfx_count)
+    #print "Request will be scheduled and will annouced after " + str(cycle)
+    	sch_time="Request is queued and is scheduled to be annouced with in " +str((cycle+1)*1.5)+" hours"
+    	response=str(uid)+","+sch_time;
+    else:
+	response="You are not Authorized to make this request.Contact NSL for more information." 
+        response=str(uid)+","+response;
+    threadLock.release()
     return response
 
 
@@ -161,27 +198,38 @@ class myThread (threading.Thread):
         self.threadID = threadID
         self.name = name
     def run(self):
-        print "Starting " + self.name
+        #print "Starting " + self.name
         if self.name == "Thread1":
             process()
         else:
 	    readQueue()
-        print "Exiting " + self.name
+        #print "Exiting " + self.name
 
 #Withdraws Annoucements made in previous cycle
 def withdraw():
+    #print "in withdraw"
     while not prevQueue.empty():
         msgl=prevQueue.get()
         str1=msgl.split(" ")
         pfx=check(str1[2])
 	msg="withdraw"+" "+str(pfx)+" "+str1[1]
-	print msg
+	#print msg
 	sock.send(msg)
          
+#Sends Beacon Request-- Request is hardcoded
+#To do-- Figure out better way to generate default request
+def sendBeaconReq():
+    req="announce WISC Default"
+    print "Sending Default Beacon Request"
+    sock.send(req)
+    prevQueue.put(req) 
+    
+
+
 #reads the request from the queue and makes announcement
 def readQueue():
     while 1:
-        print "In readQueue"
+        #print "In readQueue"
         time.sleep(30)
         threadLock.acquire()
 	withdraw() #indicates the beginning of next cycle
@@ -189,17 +237,20 @@ def readQueue():
         pfxCount=checkFreePfx()
         if pfxCount >= 1:
             if not reqQueue.empty():
-                while (pfxCount>=1):
+                while not reqQueue.empty() and pfxCount>=1:
                     data = reqQueue.get()
 		    sock.send(data)
 		    print data
-		    print pfxCount
+		    #print pfxCount
                     pfxCount=pfxCount-1
 		    prevQueue.put(data)
+		else:
+		    if pfxCount>=1:
+		        sendBeaconReq()
             else:
-                print "No Requests is queued this time"
-        else:
-            print "No pfx still available"
+		#send beacon request if prefixes are still avaialble
+		sendBeaconReq()
+                #print "No Requests is queued this time"
 	threadLock.release()
 
 
@@ -233,7 +284,7 @@ sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(serverAddress)
 server.register_function(announce, "announce")
 server.register_function(check, "check")
-
+server.register_function(priority_announce,"priority_announce")
 threadLock = threading.Lock()
 reqQueue = MyPriorityQueue()
 prevQueue = Queue.Queue()
@@ -241,7 +292,7 @@ prevQueue = Queue.Queue()
 threadList = ["Thread1", "Thread2" ]
 threads = []
 threadID = 1
-#signal.signal(signal.SIGINT, signal_handler)
+signal.signal(signal.SIGINT, signal_handler)
 # Create new threads
 for tName in threadList:
     thread = myThread(threadID, tName )
