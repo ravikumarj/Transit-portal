@@ -67,6 +67,35 @@ class MyPriorityQueue(PriorityQueue):
 	elif p == 3:
 	    p3=p3-1
         return item
+    
+    def checkqueue(self,transid):
+         print("Priority")
+         print("=" * 42)
+         for elem in self.queue:
+             print(elem)
+         print("current queue status")
+	 index=0
+         for _,_,req in self.queue:
+	     tmp=req.split(" ")
+	     tid=tmp[2]
+	     if tid == transid:
+		index=index+1
+		return index 
+             else:
+                 index=index+1
+	 return 0
+		         
+def authenticate_user(username):
+    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT username FROM users where username= '"+username+"'")
+        rows = cur.fetchall()
+        if len(rows)>=1:
+            return 'true'
+        else:
+            return 'false'
+             
 
 
 def authenticate(username,group):
@@ -79,6 +108,18 @@ def authenticate(username,group):
 	    return 'true'
 	else:
 	    return 'false'
+
+def validate(username,password):
+    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    with con:
+        cur = con.cursor()
+        cur.execute("SELECT username FROM users where username= '"+username+"' and password= '"+password+"'")
+        rows = cur.fetchall()
+        if len(rows)>=1:
+            return 'true'
+        else:
+            return 'false'
+
     
 
 #will be exposed to both normal users and researchers
@@ -88,7 +129,6 @@ def announce(msg):
     global p2
     global p3
     global pos_user
-
     str1=msg.split(" ")
     print len(str1)
     if len(str1)<3:
@@ -99,9 +139,10 @@ def announce(msg):
     #if str1[0] == "check":
     #print "calling check"
     uid=getUniqueId()
-    if authenticate(str1[2],'user')== 'true':
+    if authenticate_user(str1[2])== 'true':
     	pfx_count=checkPfx()
 	msg=str1[0]+" "+str1[1]+" "+str(uid)
+	print msg
     	reqQueue.put(msg,2) #priority for users
     	#cycle=(p1/pfx_count)+(((p1%pfx_count)+p2)/pfx_count)
     	if (p1+p2)%pfx_count == 0 and p2 !=0:
@@ -119,7 +160,7 @@ def announce(msg):
     	response=str(uid)+","+sch_time;
     else:
         response="You are not Authorized to make this request.Contact NSL for more information."
-        response=str(uid)+","+response;
+        response="None,"+response;
 
     threadLock.release() 
     return response
@@ -159,7 +200,7 @@ def priority_announce(msg):
     	response=str(uid)+","+sch_time;
     else:
 	response="You are not Authorized to make this request.Contact NSL for more information." 
-        response=str(uid)+","+response;
+        response="None,"+response;
     threadLock.release()
     return response
 
@@ -190,6 +231,30 @@ def check(msg):
             return None
         else:
             return row[0] 
+
+
+def check_schedule(transid):
+    index=reqQueue.checkqueue(transid);
+    pfx_count=checkPfx()
+    print "index is "+str(index)
+    if index <= pfx_count:
+	if index ==0:
+        	ret=check(transid)
+        	if ret is not None:
+            		return "Currently announced and will be withdrawn within 1.5 hours"
+        	else:
+            		return "Request is not scheduled to be announced"
+
+	return "Request is queued and is scheduled to be annouced with in 1.5 hours " 
+    else:
+	if index%pfx_count == 0:
+	   index=(index/pfx_count)-1
+	else:
+	   index=index/pfx_count
+        return "Request is queued and is scheduled to be annouced with in " +str((index+1)*1.5)+" hours"
+		
+   
+
 #    os.system("python ctrlpfx.py --prefix 236 --mux wisc --poison 72")
 
 class myThread (threading.Thread):
@@ -283,8 +348,9 @@ serverAddress = ('localhost',8999)
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 sock.connect(serverAddress)
 server.register_function(announce, "announce")
-server.register_function(check, "check")
+server.register_function(check_schedule, "check_schedule")
 server.register_function(priority_announce,"priority_announce")
+server.register_function(validate,"validate")
 threadLock = threading.Lock()
 reqQueue = MyPriorityQueue()
 prevQueue = Queue.Queue()

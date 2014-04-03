@@ -73,7 +73,7 @@ while True:
 	    mux=msg[1]
 	    trans_id=msg[2]
 	    if pfx is not None:
-		if((pfx in PREFIXES)and((mux in MUXES)or(mux =='all'))):
+		if((pfx in PREFIXES)):
 		    if trans_id=='Default':
 		        print "Announcing Default Beacon Request"
 		    else:
@@ -81,7 +81,11 @@ while True:
 			    print "Announcing User Request"
 			else:
 			    print "Announing Research Request"
-		    Announce(pfx,mux)
+		    muxes=mux.split(",")
+		    for i in range(len(muxes)):
+		    	Announce(pfx,muxes[i])
+			print muxes[i]
+			
 		    updateDB_announce(pfx,trans_id)
 	    else:
 		print "No prefixes avaialble for advertisement"
@@ -90,7 +94,9 @@ while True:
 	
         if msg[0] == 'withdraw':
             print 'withdrawing'
-	    ctrlpfx_new.withdraw(int(msg[1]),msg[2]) #pfx,MUX
+	    muxes=msg[2].split(",")
+            for i in range(len(muxes)):
+		ctrlpfx_new.withdraw(int(msg[1]),muxes[i]) #pfx,MUX
 	    updateDB_withdraw(int(msg[1]))
         if msg[0] == 'poison':
 	    print 'Poisoning'

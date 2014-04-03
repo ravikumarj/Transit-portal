@@ -1,0 +1,274 @@
+<html>
+<head>
+
+
+<link class="cssdeck" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.min.css">
+<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css" class="cssdeck">
+<script src='jquery.min.js'></script>
+<script type="text/javascript">
+
+
+var username;
+var password;
+function onload()
+{
+document.getElementById("announce").style.display="none";
+}
+function loadXMLDoc()
+{
+var xmlhttp;
+username=document.getElementById("username").value;
+password=document.getElementById("password").value;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    if(xmlhttp.responseText == "true")
+        {
+            document.getElementById("loginbody").style.display = "none";
+            document.getElementById("announce").style.display="inline-block";
+
+        }
+    }
+}
+xmlhttp.open("GET","http://localhost/authenticate.php?username=" + username + "&password=" + password,true);
+//alert(username);
+xmlhttp.send();
+}
+
+
+function announce()
+{
+//alert(document.getElementById("GATECH").checked);
+var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  var list = document.getElementById('tid');
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    
+          var data=xmlhttp.responseText;
+          json = eval("(" + data + ")");
+          if(json.transid != "None")
+            {
+            var entry = document.createElement('li');
+            entry.appendChild(document.createTextNode(json.transid));
+            list.appendChild(entry);
+            }
+
+
+         // alert(json);
+          
+          //eval(json);
+          //alert(json.transid);
+          alert(json.message);
+            //document.getElementById("loginbody").style.display = "none";
+            //document.getElementById("announce").style.display="inline-block";
+
+
+    }
+}
+var ajaxstr="http://localhost/announce.php?username=" + username + "&password=" + password+"&GATECH="+document.getElementById("GATECH").checked;
+ajaxstr=ajaxstr+"&WISC="+document.getElementById("WISC").checked;
+ajaxstr=ajaxstr+"&CLEMSON="+document.getElementById("CLEMSON").checked;
+ajaxstr=ajaxstr+"&PRINCE="+document.getElementById("PRINCE").checked;
+ajaxstr=ajaxstr+"&UW="+document.getElementById("UW").checked;
+ajaxstr=ajaxstr+"&AMSIX="+document.getElementById("AMSIX").checked;
+ajaxstr=ajaxstr+"&ISI="+document.getElementById("ISI").checked;
+ajaxstr=ajaxstr+"&group="+document.getElementById("selectbasic").value;
+//alert(ajaxstr);
+xmlhttp.open("GET",ajaxstr,true);
+//alert(username);
+xmlhttp.send();
+
+
+}
+
+ $('#tid li').live('click', function ()
+{
+    var selected = $(this).text();
+    //alert("List Item: " + selected);
+    var xmlhttp;
+if (window.XMLHttpRequest)
+  {// code for IE7+, Firefox, Chrome, Opera, Safari
+  xmlhttp=new XMLHttpRequest();
+  }
+else
+  {// code for IE6, IE5
+  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  var list = document.getElementById('tid');
+xmlhttp.onreadystatechange=function()
+  {
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+      alert(xmlhttp.responseText);
+    }
+  }
+var ajaxstr="http://localhost/check.php?transid="+selected;
+//xmlhttp.open("GET",ajaxstr,true);
+xmlhttp.send();
+
+
+});
+
+
+</script>
+</head>
+<body onload="onload()">
+
+<div class="" id="loginModal">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3>Welcome to Beacon Client!!</h3>
+    </div>
+
+    <div class="modal-body" id="loginbody">
+        <div class="well">
+            <ul class="nav nav-tabs">
+                <li class="active"><a href="#login" data-toggle="tab">Login</a></li>
+                
+            </ul>
+            <div id="logon">
+            <div id="myTabContent" class="tab-content">
+                <div class="tab-pane active in" id="login">
+                    <form class="form-horizontal" action='' method="POST">
+                        <fieldset>
+                                
+                            <div class="control-group">
+                                <!-- Username -->
+                                <label class="control-label"  for="username">Username</label>
+                                <div class="controls">
+                                    <input type="text" id="username" name="username" placeholder="" class="input-xlarge">
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <!-- Password-->
+                                <label class="control-label" for="password">Password</label>
+                                <div class="controls">
+                                    <input type="password" id="password" name="password" placeholder="" class="input-xlarge">
+                                </div>
+                            </div>
+                            
+                            
+                            <div class="control-group">
+                                <!-- Button -->
+                                <div id="enter">
+                                <div class="controls">
+                                    <button type="button" class="btn btn-success" onclick="loadXMLDoc()">Login</button>
+                                </div>
+                            </div>
+                            </div>
+                        </fieldset>
+                    </form>                
+                </div>
+                
+            </div>
+        </div>
+           
+        </div>
+    </div>
+
+    <div id="announce">
+<form name="input" action="announce.php" method="get">
+        
+<fieldset>
+
+<!-- Form Name -->
+<legend>announce</legend>
+
+<!-- Select Basic -->
+<div class="control-group">
+  <label class="control-label" for="selectbasic">Select Group</label>
+  <div class="controls">
+    <select id="selectbasic" name="selectbasic" class="input-xlarge">
+      <option>Normal users</option>
+      <option>Research</option>
+    </select>
+  </div>
+</div>
+
+<!-- Multiple Checkboxes (inline) -->
+<div class="control-group">
+  <label class="control-label" for="checkboxes">Inline Checkboxes</label>
+  <div class="controls">
+    <label class="checkbox inline" for="checkboxes-0">
+      <input name="checkboxes" id="GATECH" value="GATECH" type="checkbox">
+      GATECH
+    </label>
+    <label class="checkbox inline" for="checkboxes-1">
+      <input name="checkboxes" id="WISC" value="WISC" type="checkbox">
+      WISC
+    </label>
+    <label class="checkbox inline" for="checkboxes-2">
+      <input name="checkboxes" id="CLEMSON" value="CLEMSON" type="checkbox">
+      CLEMSON
+    </label>
+    <label class="checkbox inline" for="checkboxes-3">
+      <input name="checkboxes" id="PRINCE" value="PRINCE" type="checkbox">
+      PRINCE
+    </label>
+<label class="checkbox inline" for="checkboxes-4">
+      <input name="checkboxes" id="UW" value="UW" type="checkbox">
+    UW
+    </label>
+<label class="checkbox inline" for="checkboxes-5">
+      <input name="checkboxes" id="AMSIX" value="AMSIX" type="checkbox">
+    AMSIX
+    </label>
+
+<label class="checkbox inline" for="checkboxes-6">
+      <input name="checkboxes" id="ISI" value="ISI" type="checkbox">
+    ISI
+    </label>
+
+
+
+  </div>
+</div>
+
+<!-- Button -->
+<div class="control-group">
+  
+  <div class="controls">
+    <button type="button" id="singlebutton" name="singlebutton" class="btn btn-primary" onclick="announce()">Announce</button>
+  </div>
+</div>
+
+</fieldset>
+</form>
+
+
+
+
+    </div>
+
+
+      <div id="table">
+        <ol id="tid"></ol>
+
+
+      </div>
+</div>
+
+
+
+</body>
+</html>

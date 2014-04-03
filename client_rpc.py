@@ -22,7 +22,7 @@ def main(argv):
    inputfile = ''
    outputfile = ''
    try:
-      opts, args = getopt.getopt(argv,"ha:wp:cr:",["announce=","withdraw=","poison=","check=","research="])
+      opts, args = getopt.getopt(argv,"ha:wp:c:r:v:",["announce=","withdraw=","poison=","check=","research=","validate="])
    except getopt.GetoptError:
       print 'client.py -a <MUX>'
       sys.exit(2)
@@ -42,7 +42,7 @@ def main(argv):
 	     res=response.split(",")
 	 
              saveUid(res[0])
-	     print res[1]
+	     print "{transid:'"+res[0]+"',message:'"+res[1]+"'}"
       elif opt in("-r","--research"):
 	 info=arg.split(":")
          if len(info)<2:
@@ -54,7 +54,7 @@ def main(argv):
              res=response.split(",")
 
              saveUid(res[0])
-             print res[1]
+	     print "{transid:'"+res[0]+"',message:'"+res[1]+"'}"
       elif opt in ("-w", "--withdraw"):#MUX
          uid=getUid()
          #mux=arg
@@ -66,12 +66,18 @@ def main(argv):
 	 else:
              print "No announcements made from this client that can be withdrawn"
       elif opt in ("-c","--check"):
-          uid1=getUid()
-	  pfx_g=proxy.check(uid1)
-          if pfx_g is None:
-	      print "No prefix available for this Transaction ID"
-          else:
-              print "PFx used %d"%pfx_g
+	  uid1=arg;
+          #uid1=getUid()
+	  msg=proxy.check_schedule(uid1)
+	  print msg
+      elif opt in ("-v","--validate"):
+       	   info=arg.split(":")   
+	   username=info[0]
+	   password=info[1]
+	
+           response=proxy.validate(username,password)
+	   print response
+
 
 if __name__ == "__main__":
    main(sys.argv[1:])
