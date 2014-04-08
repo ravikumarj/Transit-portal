@@ -241,7 +241,7 @@ def check_schedule(transid):
 	if index ==0:
         	ret=check(transid)
         	if ret is not None:
-            		return "Currently announced and will be withdrawn within 1.5 hours"
+            		return "Currently announced and will be withdrawn within 1.5 hours and pfx used is 184.164."+str(ret)+".0"
         	else:
             		return "Request is not scheduled to be announced"
 
@@ -278,7 +278,7 @@ def withdraw():
         str1=msgl.split(" ")
         pfx=check(str1[2])
 	msg="withdraw"+" "+str(pfx)+" "+str1[1]
-	#print msg
+	print msg
 	sock.send(msg)
          
 #Sends Beacon Request-- Request is hardcoded

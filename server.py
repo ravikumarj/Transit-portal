@@ -96,7 +96,8 @@ while True:
             print 'withdrawing'
 	    muxes=msg[2].split(",")
             for i in range(len(muxes)):
-		ctrlpfx_new.withdraw(int(msg[1]),muxes[i]) #pfx,MUX
+		if muxes[i] is not None and msg[1] is not None:
+			ctrlpfx_new.withdraw(int(msg[1]),muxes[i]) #pfx,MUX
 	    updateDB_withdraw(int(msg[1]))
         if msg[0] == 'poison':
 	    print 'Poisoning'
