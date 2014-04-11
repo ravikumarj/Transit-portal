@@ -11,6 +11,8 @@ import threading
 import time
 from Queue import PriorityQueue
 
+
+MUXES=['GATECH','WISC','CLEMSON','PRINCE','UW','AMSIX','ISI']
 #Three different classes of priority. These variables keep track number of requests 
 #in each priority class.
 p1=0
@@ -85,6 +87,40 @@ class MyPriorityQueue(PriorityQueue):
                  index=index+1
 	 return 0
 		         
+
+#Msg format: string MUX username
+#MUX is combination of MUX names
+#for example WISC,ISI,GATECH
+#it may include ASN -->WISC.73,ISI.73/74
+#or it may include withdraw or unpoison messages -->WISC.unpoison
+def validate_message(msg):
+    	tup=msg.split(",")
+	for i in range(len(tup)):
+        	mux=tup[i].split(".")
+        	if mux[0]  not in MUXES:
+                	return "false"
+        	else:
+                	if(len(mux) ==2):
+                        	asn=mux[1].split("/")
+                        	if len(asn) ==1:
+                                	try:
+                                        	int(asn[0])
+                                	except ValueError:
+                                        	if asn[0] != "unpoison" and asn[0] != "withdraw":
+                                                	return "false"
+
+                        	else:
+                                	for j in range(len(asn)):
+                                        	try:
+                                                	int(asn[j])
+                                        	except ValueError:
+                                                	return "false"
+
+
+	return "true"
+	
+    
+	
 def authenticate_user(username):
     con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
     with con:
@@ -120,10 +156,19 @@ def validate(username,password):
         else:
             return 'false'
 
+def updateTransaction(username,tid):
+	con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    	with con:
+        	cur = con.cursor()
+        	cur.execute("insert into transaction values('"+username+"','"+tid+"')")
+
     
 
 #will be exposed to both normal users and researchers
 #Writes the request to the priority queue
+#Format: "announce [MUX,MUX..] username"
+#MUX might include ASN for poison
+#MUX1.AS1/AS2,MUX2.AS2,MUX3
 def announce(msg):
     global p1
     global p2
@@ -134,6 +179,9 @@ def announce(msg):
     if len(str1)<3:
 	response="None,Invalid Arguments!Please refer user guide for usage information"
         return response
+    if validate_message(str1[1]) == "false":
+        response="None,Invalid Arguments!Please refer user guide for usage information"
+        return response
     threadLock.acquire()
     #print msg
     #if str1[0] == "check":
@@ -142,6 +190,8 @@ def announce(msg):
     if authenticate_user(str1[2])== 'true':
     	pfx_count=checkPfx()
 	msg=str1[0]+" "+str1[1]+" "+str(uid)
+	username=str1[2]
+	updateTransaction(username,str(uid))
 	print msg
     	reqQueue.put(msg,2) #priority for users
     	#cycle=(p1/pfx_count)+(((p1%pfx_count)+p2)/pfx_count)
@@ -177,6 +227,9 @@ def priority_announce(msg):
     #print len(str1)
     if len(str1)<3:
         response="None,Invalid Arguments!Please refer user guide for usage information"
+        return response
+    if validate_message(str1[1]) == "false":
+	response="None,Invalid Arguments!Please refer user guide for usage information"
         return response
     threadLock.acquire()
     #print msg
@@ -270,7 +323,9 @@ class myThread (threading.Thread):
 	    readQueue()
         #print "Exiting " + self.name
 
-#Withdraws Annoucements made in previous cycle
+#Wont explicitly withdraw an announcement
+#Will update the Database to free the prefix
+#It will be used in next cycle
 def withdraw():
     #print "in withdraw"
     while not prevQueue.empty():
@@ -295,7 +350,7 @@ def sendBeaconReq():
 def readQueue():
     while 1:
         #print "In readQueue"
-        time.sleep(30)
+        time.sleep(60)
         threadLock.acquire()
 	withdraw() #indicates the beginning of next cycle
         time.sleep(5) 
