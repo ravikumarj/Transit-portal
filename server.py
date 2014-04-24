@@ -6,24 +6,23 @@ import ctrlpfx_new
 import MySQLdb as mdb
 from multiprocessing import Process
 import smtplib
-
+import time
 from email.mime.text import MIMEText
 
-MUXES=('GATECH','WISC','CLEMSON','PRINCE','UW','AMSIX','ISI')
 
-PREFIXES = range(236, 239)
+config = {}
+
 
 
 def updateDB_announce(pfx,trans_id):
-    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    con = mdb.connect('localhost', db_user_name, db_password, db_name)
     with con:
         cur = con.cursor()
         cur.execute("UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx))
-	#print "UPDATE pfx SET TransactionId='"+str(trans_id)+"' where PFX = "+str(pfx)
-    
+	   
 
 def updateDB_withdraw(pfx):
-    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    con = mdb.connect('localhost', db_user_name, db_password, db_name)
     with con:
         cur = con.cursor()
         cur.execute("UPDATE pfx SET TransactionId=NULL,Availability=1 where PFX = "+str(pfx))
@@ -53,11 +52,13 @@ def Announce(pfx,mux):
 			else:
 			        poison=poison+"47065"
 	                        print "poisoning " +poison
+				print "Mux" + mux
        	                        ctrlpfx_new.poison(int(pfx),mux,poison)
 
 		else:
 			poison=poison+"47065"
 			print "poisoning " +poison
+			print "Mux " + mux +","
 			ctrlpfx_new.poison(int(pfx),mux,poison)
 	else:
 		ctrlpfx_new.announce(int(pfx),mux)
@@ -71,25 +72,28 @@ def signal_handler(signal, frame):
     sys.exit(0)
 
 def getEmail(tid):
-    con = mdb.connect('localhost', 'testuser', 'test623', 'DR');
+    con = mdb.connect('localhost', db_user_name, db_password, db_name)
     with con:
         cur = con.cursor()
         cur.execute("select username from transaction where TrasactionId='"+tid+"'")
 	username=cur.fetchone()
 	cur.execute("select email from users where username='"+username[0]+"'")
-	email=cur.fetchone()
-	print email[0]
-	return email[0]
+	if cur is not None:
+		email=cur.fetchone()
+		print email[0]
+		return email[0]
+	else:
+		return None
 	
 
 def sendEmail(email,pfx,info):
-    msg = MIMEText("Beacon: Prefix used 184.164."+str(pfx)+".0 for announcing "+info+"\nThis annoucement will expire in 1.5 hours after which it might get overwritten")
+    msg = MIMEText("Beacon: Prefix used 184.164."+str(pfx)+".0 for announcing "+info+"\nAnnoucement was made at "+time.strftime("%H:%M:%S")+"\nThis annoucement will expire in " +str(cycle_time)+" after which it might get overwritten")
 
 # me == the sender's email address
 # you == the recipient's email address
-    msg['Subject'] = 'Hi From Beacon Client'
-    msg['From'] = 'jeyarama@usc.edu'
-    msg['To'] = 'jeyarama@usc.edu'
+    msg['Subject'] = 'Beacon Request has been announced'
+    msg['From'] = 'NSL@usc.edu'
+    
 
 # Send the message via our own SMTP server, but don't include the
 # envelope header.
@@ -111,11 +115,29 @@ def getfree_pfx():
 	    return row[0];
 
 
-#pfx=getfree_pfx();
-#print "pffffx"+str(pfx);
-#if pfx is not None:
+
+
+#Read the Config file
+
+execfile("config.ini", config) 
+try:
+    MUXES=config["MUX"]
+    db_name=config["db_name"]
+    db_password=config["db_password"]
+    db_user_name=config["db_user_name"]
+    cycle_time=config["cycle_time"]
+except:
+    print "Config values not given."
+    sys.exit(0)
+
+
 signal.signal(signal.SIGINT, signal_handler)
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+
+#This is where announcer is listening for scheduler. 
+#Assumption : Announcer and Scheduler will be running the same machine.
+#Announcer IP address is hardcoded for this reason
 serversocket.bind(('localhost', 8999))
 serversocket.listen(5)
 print "Ready to Accept"
@@ -131,7 +153,6 @@ while True:
 	    mux=msg[1]
 	    trans_id=msg[2]
 	    if pfx is not None:
-		if((pfx in PREFIXES)):
 		    if trans_id=='Default':
 		        print "Announcing Default Beacon Request"
 		    else:
@@ -147,7 +168,10 @@ while True:
 		    updateDB_announce(pfx,trans_id)
 		    if trans_id != "Default":
 		    	email=getEmail(trans_id)
-		    	sendEmail(email,pfx,msg[1])
+			if email is not None:
+		    		sendEmail(email,pfx,msg[1])
+			else:
+				print "No Email found in DB"
 		    
 	    else:
 		print "No prefixes avaialble for advertisement"

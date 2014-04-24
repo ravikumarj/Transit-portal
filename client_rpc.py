@@ -1,104 +1,157 @@
-import xmlrpclib
-import MySQLdb as mdb
-import sys, getopt
-
-def saveUid(trans_id):
-    fo = open("transid.txt", "w+")
-    fo.write(trans_id);
-    fo.close()
-
-def getUid():
-    fo = open("transid.txt", "r")
-    uid=fo.read();
-    fo.close()
-    return uid
+#!/usr/bin/env python
+import json
+import os, sys
+from optparse import OptionParser
+from optparse import Option, OptionValueError
+import urllib
+import urllib2
 
 
-def main(argv):
-   pfx_g=None
-   proxy = xmlrpclib.ServerProxy("http://localhost:8000/")
+conflist = []
+jsondata ={}
 
+VERSION = '0.1'
+
+class MultipleOption(Option):
+    ACTIONS = Option.ACTIONS + ("extend",)
+    STORE_ACTIONS = Option.STORE_ACTIONS + ("extend",)
+    TYPED_ACTIONS = Option.TYPED_ACTIONS + ("extend",)
+    ALWAYS_TYPED_ACTIONS = Option.ALWAYS_TYPED_ACTIONS + ("extend",)
+
+    def take_action(self, action, dest, opt, value, values, parser):
+        if action == "extend":
+
+            values.ensure_value(dest, []).append(value)
+        else:
+            Option.take_action(self, action, dest, opt, value, values, parser)
+
+
+def main():
+    PROG = os.path.basename(os.path.splitext(__file__)[0])
+    long_commands = ('categories')
+    short_commands = {'cat':'categories'}
+    description = """Just a test"""
+    parser = OptionParser(option_class=MultipleOption,
+                          usage='usage: %prog [OPTIONS] COMMAND [BLOG_FILE]',
+                          version='%s %s' % (PROG, VERSION),
+                          description=description)
+    parser.add_option('-m', '--mux', 
+                      action="extend", type="string",
+                      dest='name', 
+                      metavar='CONFIGURATION', 
+                      help='MUX Configuration eg - WISC')
+    parser.add_option('-u', '--user', 
+                      action="extend", type="string",
+                      dest='username', 
+                      metavar='string', 
+                      help='Username')
+    parser.add_option('-p', '--password', 
+                      action="extend", type="string",
+                      dest='password', 
+                      metavar='string', 
+                      help='password')
+    parser.add_option('-t', 
+                      type="string",
+                      dest='tid', 
+                      metavar='CONFIGURATION', 
+                      help='Transaction Id')
+    parser.add_option('-l', 
+                      type="string",
+                      dest='priority', 
+                      metavar='CONFIGURATION', 
+                      help='Custom Priority Level')
+
+
+    parser.add_option('-a','--announce', help='Announce option', dest='announce', 
+                      default=False, action='store_true')
+
+    parser.add_option('-c','--check', help='Check option', dest='check', 
+                      default=False, action='store_true')
+
+
+
+    if len(sys.argv) == 1:
+        parser.parse_args(['--help'])
+
+
+
+    OPTIONS, args = parser.parse_args()
     
-   inputfile = ''
-   outputfile = ''
-   try:
-      opts, args = getopt.getopt(argv,"ha:wp:c:r:v:",["announce=","withdraw=","poison=","check=","research=","validate="])
-   except getopt.GetoptError:
-      print 'client.py -a <MUX>'
-      sys.exit(2)
-   for opt, arg in opts:
-      if opt == '-h':
-         print 'client.py -a <MUX>'
-         sys.exit()
-      elif opt in ("-a", "--announce"):
-         info=arg.split(":")
-         if len(info)<2:
- 	     print "Invalid Arguments! Please refer user guide for usage information"
-	 else:
-             mux = info[0]
-             username=info[1]
- 
-	     response=proxy.announce('announce '+str(mux)+' ' +username) 
-	     res=response.split(",")
-	 
-             saveUid(res[0])
-	     print "{transid:'"+res[0]+"',message:'"+res[1]+"'}"
-      elif opt in("-r","--research"):
-	 info=arg.split(":")
-         if len(info)<2:
-             print "Invalid Arguments! Please refer user guide for usage information"
-         else:
-	     mux = info[0]
-	     username=info[1]
-             response=proxy.priority_announce('research '+str(mux)+' '+username)
-             res=response.split(",")
-
-             saveUid(res[0])
-	     print "{transid:'"+res[0]+"',message:'"+res[1]+"'}"
-      elif opt in ("-w", "--withdraw"):#MUX
-         uid=getUid()
-         #mux=arg
-         #pfx=getPfx(str(uid))
-	 pfx=proxy.check(uid)
-         print pfx
-	 if pfx is not None:
-	     proxy.announce('withdraw '+str(pfx)+' WISC')
-	 else:
-             print "No announcements made from this client that can be withdrawn"
-      elif opt in ("-c","--check"):
-	  uid1=arg;
-          #uid1=getUid()
-	  msg=proxy.check_schedule(uid1)
-	  print msg
-      elif opt in ("-v","--validate"):
-       	   info=arg.split(":")   
-	   username=info[0]
-	   password=info[1]
-	
-           response=proxy.validate(username,password)
-	   print response
 
 
-if __name__ == "__main__":
-   main(sys.argv[1:])
+    if OPTIONS.name is not None:
+      for conf in OPTIONS.name:
+        print conf
+        d= {}
+        mux=conf.split(".")
+        d["mux"]=mux[0]
+        if len(mux)==2:
+          d["data"]=mux[1]
+        else:
+          d["data"]=""
+        conflist.append(d)
+    jsondata["configuration"]=conflist
+    
+
+    if OPTIONS.username is not None:
+      jsondata["username"]=OPTIONS.username[0]
+    else:
+      print "Username is needed"
+      exit(-1)
+
+    if OPTIONS.password is not None:
+      jsondata["password"]=OPTIONS.password[0]
+    else:
+      print "Password is needed"
+      exit(-1)
 
 
-#Allows no return value in RPC call
-#proxy = xmlrpclib.ServerProxy("http://localhost:8000/",allow_none=True)
+    if OPTIONS.check == True:
+        print "Check"
+        if OPTIONS.tid is not None:
+          jsondata["TID"]=OPTIONS.tid   
+         
+          data= json.dumps(jsondata)
+          #print data
+          url = "http://localhost:5000/beacon_check"
 
-#proxy = xmlrpclib.ServerProxy("http://localhost:8000/")
-#print "Try announcing from client" 
-#Announces prefix
-#proxy.announce('announce 237 WISC')
+          request_object = urllib2.Request(url, data)
 
-#uid=proxy.announce('announce WISC')
+          #make the request using the request object as an argument, store response in a variable
+          response = urllib2.urlopen(request_object)
 
+          #store request response in a string
+          html_string = response.read()
+          print html_string   
+        else:
+          print "Invalid Arguments Transaction Id needed for checking"
+
+    if OPTIONS.announce == True:
+        print "Announce"
+        if OPTIONS.priority is not None:
+          jsondata["priority"]=OPTIONS.priority
+
+        #print conflist
+        #print jsondata
+        data= json.dumps(jsondata)
+        #print data
+        url = "http://localhost:5000/beacon"
+
+        request_object = urllib2.Request(url, data)
+
+        #make the request using the request object as an argument, store response in a variable
+        response = urllib2.urlopen(request_object)
+
+        #store request response in a string
+        html_string = response.read()
+        print html_string
+        
+
+     
+    
 
 
 
 
-#Withdraws prefix
-#proxy.announce('withdraw 237 WISC')
-
-#Poison prefix
-#proxy.announce('poison 237 WISC 74')
+if __name__ == '__main__':
+    main()
