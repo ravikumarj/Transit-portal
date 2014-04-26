@@ -77,11 +77,14 @@ def getEmail(tid):
         cur = con.cursor()
         cur.execute("select username from transaction where TrasactionId='"+tid+"'")
 	username=cur.fetchone()
-	cur.execute("select email from users where username='"+username[0]+"'")
-	if cur is not None:
-		email=cur.fetchone()
-		print email[0]
-		return email[0]
+	if username is not None:
+		cur.execute("select email from users where username='"+username[0]+"'")
+		if cur is not None:
+			email=cur.fetchone()
+			print email[0]
+			return email[0]
+		else:
+			return None
 	else:
 		return None
 	
@@ -187,9 +190,14 @@ while True:
         		#p.start()
 
 			#ctrlpfx_new.withdraw(int(msg[1]),muxes[i]) #pfx,MUX
-	    updateDB_withdraw(int(msg[1]))
+	    if msg[1] is not None:
+		try:
+	    		updateDB_withdraw(int(msg[1]))
+		except:
+			print "handled"
         if msg[0] == 'poison':
 	    print 'Poisoning'
-	    ctrlpfx_new.poison(int(msg[1]),msg[2]) 
+	    if msg[1] is not None and msg[2] is not None:
+	    	ctrlpfx_new.poison(int(msg[1]),msg[2]) 
             #updateDB(int(msg[1]))
     clientSocket.close()

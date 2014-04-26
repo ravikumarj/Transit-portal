@@ -15,6 +15,7 @@ from flask import request
 import json
 import sys, getopt
 import time
+import flask
 
 
 config = {}
@@ -23,11 +24,29 @@ priority_level = None;
 app = Flask(__name__)
 
 
-#render Web interface
-@app.route("/")
-def hello():
-    return "hello"
+app.secret_key = "bacon"
 
+
+@app.route("/")
+def login():
+    return flask.render_template('beacon.html')
+
+@app.route("/authenticate", methods=['POST'])
+def authentication():
+    data=request.stream.read()
+    #jdata=json.dumps(data)
+    pdata=json.loads(data)  
+    print pdata
+    try:
+        username=pdata["username"]
+        password=pdata["password"]
+        print username
+        print password
+        ret=validate(username,password)
+    except:
+        print "Invalid JSON"
+        return "false"
+    return ret
 
 
 #configuration username
@@ -78,6 +97,7 @@ def parse_announce_request():
     if priority_level is not None:
         print "priority --> "+priority_level
 
+    print test
     response=announce(test)
   
     return response
@@ -184,6 +204,8 @@ def validate_message(msg):
     	tup=msg.split(",")
 	for i in range(len(tup)):
         	mux=tup[i].split(".")
+            	if(len(mux)>2):
+                	return "false"
         	if mux[0]  not in MUXES:
                 	return "false"
         	else:
@@ -248,10 +270,10 @@ def validate(username,password):
     con = mdb.connect('localhost', db_user_name, db_password, db_name)
     with con:
         cur = con.cursor()
-        cur.execute("SELECT username FROM users where username= '"+username+"' and password= '"+password+"'")
+        cur.execute("SELECT user_group FROM users where username= '"+username+"' and password= '"+password+"'")
         rows = cur.fetchall()
         if len(rows)>=1:
-            return 'true'
+            return rows[0]     
         else:
             return 'false'
 
@@ -270,9 +292,6 @@ def updateTransaction(username,tid):
 #MUX1.AS1/AS2,MUX2.AS2,MUX3
 def announce(msg):
     print "In announce msg:"
-    global p1
-    global p2
-    global p3
     global pos_user
     global priority_level
     str1=msg.split(" ")
@@ -302,7 +321,7 @@ def announce(msg):
                 if int(priority_level) > 5 and int(priority_level) <= 10:    
     	           reqQueue.put(msg,int(priority_level)) #2, priority for users
                 else:
-                    response="Unsupported priority level for the user group"
+                    response="None,Unsupported priority level for the user group"
                     priority_level=None
                     threadLock.release() 
                     return response
@@ -314,7 +333,7 @@ def announce(msg):
                 if int(priority_level) >=1 and int(priority_level) <10:    
                    reqQueue.put(msg,int(priority_level)) #1, priority for researchers
                 else:
-                    response="Unsupported priority level for the research group"
+                    response="None,Unsupported priority level for the research group"
                     threadLock.release() 
                     priority_level=None
                     return response
@@ -329,7 +348,7 @@ def announce(msg):
         #cycle=1
     	print "Request will be scheduled and will annouced after " + str(cycle)
     	sch_time="Request is queued and is scheduled to be annouced with in " +str((cycle+1)*cycle_time)+" seconds"
-    	response=str(uid)+","+sch_time;
+    	response=str(uid)+","+sch_time+","+str1[1];
     else:
         response="You are not Authorized to make this request.Contact NSL for more information."
         response="None,"+response;
