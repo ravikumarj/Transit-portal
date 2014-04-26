@@ -46,22 +46,22 @@ def Announce(pfx,mux):
                 	poison=poison+asn[i]+" "
 		if len(asn) == 1:
 			if poison.strip() == "withdraw":
-				ctrlpfx_new.withdraw(int(pfx),mux) #pfx,MUX
+				ctrlpfx_new.withdraw(pfx,mux) #pfx,MUX
 			elif poison.strip() == "unpoison":
-                                ctrlpfx_new.unpoison(int(pfx),mux)
+                                ctrlpfx_new.unpoison(pfx,mux)
 			else:
 			        poison=poison+"47065"
 	                        print "poisoning " +poison
 				print "Mux" + mux
-       	                        ctrlpfx_new.poison(int(pfx),mux,poison)
+       	                        ctrlpfx_new.poison(pfx,mux,poison)
 
 		else:
 			poison=poison+"47065"
 			print "poisoning " +poison
 			print "Mux " + mux +","
-			ctrlpfx_new.poison(int(pfx),mux,poison)
+			ctrlpfx_new.poison(pfx,mux,poison)
 	else:
-		ctrlpfx_new.announce(int(pfx),mux)
+		ctrlpfx_new.announce(pfx,mux)
         	print "Announing "+mux
 
         #getUniqueId();

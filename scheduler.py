@@ -128,7 +128,8 @@ def parse_check_request():
 
 
 def getUniqueId():
-    return uuid.uuid1()
+    #return uuid.uuid1() // Might not be unique in long run better use time as unique ID
+    return time.time()
 
 
 def signal_handler(signal, frame):
@@ -343,12 +344,16 @@ def announce(msg):
 	   print "put queue level-->"+ priority_level 
     	#cycle=(p1/pfx_count)+(((p1%pfx_count)+p2)/pfx_count)
     	pos=getIndexInPriorityQ(uid)
-        print "position got from check " 
-        cycle=(pos-1)/pfx_count
+        print "position got from check "
+	if pfx_count != 0: 
+        	cycle=(pos-1)/pfx_count
         #cycle=1
-    	print "Request will be scheduled and will annouced after " + str(cycle)
-    	sch_time="Request is queued and is scheduled to be annouced with in " +str((cycle+1)*cycle_time)+" seconds"
-    	response=str(uid)+","+sch_time+","+str1[1];
+    		print "Request will be scheduled and will annouced after " + str(cycle)
+    		sch_time="Request is queued and is scheduled to be annouced with in " +str((cycle+1)*cycle_time)+" seconds"
+    		response=str(uid)+","+sch_time+","+str1[1];
+	else:
+		sch_time="Request is queued but is not scheduled to be annouced as no Prefixes are avaialble.Report NSL about this issue"
+		response=str(uid)+","+sch_time+","+str1[1];
     else:
         response="You are not Authorized to make this request.Contact NSL for more information."
         response="None,"+response;

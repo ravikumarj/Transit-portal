@@ -27,11 +27,12 @@ MUX2IP = { # {{{
 } # }}}
 
 def announce(prefix, mux, homeasn=HOMEASN): # {{{
-        print prefix
-        print mux
-        print homeasn
+        #print prefix
+	print "MUX -- >"+mux
+	prefix=int(prefix)
+        #print homeasn
         mux = mux.upper()
-        assert mux in MUX2IP
+	assert mux in MUX2IP
         assert prefix in PREFIXES
         assert isinstance(homeasn, int)
         # tstamp = int(time.time())
@@ -49,9 +50,11 @@ def announce(prefix, mux, homeasn=HOMEASN): # {{{
 # }}}
 def poison(prefix, mux, poisonv, homeasn=HOMEASN): # {{{
 	mux = mux.upper()
+	prefix=int(prefix)
+	print "MUX --> "+mux	
 	assert mux in MUX2IP
 	assert prefix in PREFIXES
-	poisonv =poisonv+" " +str(homeasn)
+	#poisonv =poisonv+" " +str(homeasn)
 	#assert isinstance(poisonv, announce.Announce)
 	assert isinstance(homeasn, int)
 	# tstamp = int(time.time())
@@ -71,6 +74,7 @@ def poison(prefix, mux, poisonv, homeasn=HOMEASN): # {{{
 
 def unpoison(prefix, mux): # {{{
 	mux = mux.upper()
+	prefix=int(prefix)
 	assert mux in MUX2IP
 	assert prefix in PREFIXES
 	# tstamp = int(time.time())
@@ -84,6 +88,7 @@ def unpoison(prefix, mux): # {{{
 
 def withdraw(prefix, mux): # {{{
 	mux = mux.upper()
+	prefix=int(prefix)
 	assert mux in MUX2IP
 	assert prefix in PREFIXES
 	_reset_route_map(prefix, mux)

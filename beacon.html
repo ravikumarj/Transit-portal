@@ -1,146 +1,24 @@
 <html>
 <head>
-  <style>
-#announce{
-    
-    
-    margin-left: auto;
-    margin-right: auto;
-    padding-left: 50px;
-}
-</style>
+
 
 <link class="cssdeck" rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap.min.css">
 <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/2.3.1/css/bootstrap-responsive.min.css" class="cssdeck">
-<script src='//code.jquery.com/jquery-1.11.0.min.js'></script>
-
-
+<script src='jquery.min.js'></script>
 <script type="text/javascript">
 
 
-function showHide()
-        {
-
-
-            if(document.getElementById('WISC').checked)
-            {
-                document.getElementById('WISC_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('WISC_conf').style.visibility = 'hidden';
-            }
-            if(document.getElementById('ISI').checked)
-            {
-                document.getElementById('ISI_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('ISI_conf').style.visibility = 'hidden';
-            }
-            if(document.getElementById('GATECH').checked)
-            {
-                document.getElementById('GATECH_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('GATECH_conf').style.visibility = 'hidden';
-            }
-            if(document.getElementById('UW').checked)
-            {
-                document.getElementById('UW_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('UW_conf').style.visibility = 'hidden';
-            }
-            if(document.getElementById('PRINCE').checked)
-            {
-                document.getElementById('PRINCE_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('PRINCE_conf').style.visibility = 'hidden';
-            }
-            if(document.getElementById('AMSIX').checked)
-            {
-                document.getElementById('AMSIX_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('AMSIX_conf').style.visibility = 'hidden';
-            }
-             if(document.getElementById('CLEMSON').checked)
-            {
-                document.getElementById('CLEMSON_conf').style.visibility = 'visible';
-            }
-            else
-            {
-                document.getElementById('CLEMSON_conf').style.visibility = 'hidden';
-            }
-        }
-
-
-
-
-
-var usernamel;
-var passwordl;
-var usergroup;
+var username;
+var password;
 function onload()
 {
-  document.getElementById('table').style.visibility = 'visible';
-  
 document.getElementById("announce").style.display="none";
- document.getElementById('GATECH_conf').style.visibility = 'hidden';
-  document.getElementById('WISC_conf').style.visibility = 'hidden';
-   document.getElementById('ISI_conf').style.visibility = 'hidden';
-    document.getElementById('UW_conf').style.visibility = 'hidden';
-     document.getElementById('CLEMSON_conf').style.visibility = 'hidden';
-      document.getElementById('AMSIX_conf').style.visibility = 'hidden';
-       document.getElementById('PRINCE_conf').style.visibility = 'hidden';
-       
-}
-function loadlevel()
-{
-  var list = document.getElementById('plevel');
-  if(usergroup =='user')
-  {
-          
-          for(var i=6;i<=10;i++)
-              {
-                 var entry = document.createElement('option');
-                if(i==10)
-                {
-                  entry.selected=true;
-                }
-                entry.value=i;
-                entry.appendChild(document.createTextNode(i));
-
-                list.appendChild(entry);
-              }
-  }
-  else if(usergroup == 'research')
-  {
-     for(var i=1;i<=10;i++)
-              {
-                 var entry = document.createElement('option');
-              if(i==5)
-                {
-                  entry.selected=true;
-                }
-                entry.value=i;
-                entry.appendChild(document.createTextNode(i));
-
-                list.appendChild(entry);
-              }
-  }
 }
 function loadXMLDoc()
 {
 var xmlhttp;
-usernamel=document.getElementById("username").value;
-passwordl=document.getElementById("password").value;
+username=document.getElementById("username").value;
+password=document.getElementById("password").value;
 if (window.XMLHttpRequest)
   {// code for IE7+, Firefox, Chrome, Opera, Safari
   xmlhttp=new XMLHttpRequest();
@@ -153,57 +31,22 @@ xmlhttp.onreadystatechange=function()
   {
   if (xmlhttp.readyState==4 && xmlhttp.status==200)
     {
-      //alert("Got Response")
-      alert(xmlhttp.responseText);
-      usergroup=xmlhttp.responseText;
-    if((xmlhttp.responseText == "user")||(xmlhttp.responseText == "research"))
+    if(xmlhttp.responseText == "true")
         {
             document.getElementById("loginbody").style.display = "none";
             document.getElementById("announce").style.display="inline-block";
-            loadlevel();
 
         }
-    else if(xmlhttp.responseText == "false")
-      {
-
-        alert("Username/Password Invalid")
-
-      }
     }
 }
-var parameter='{"username":"'+usernamel+'","password":"'+passwordl+'"}';
-xmlhttp.open("POST","http://localhost:5000/authenticate",true);
+xmlhttp.open("GET","http://localhost/authenticate.php?username=" + username + "&password=" + password,true);
 //alert(username);
-xmlhttp.send(parameter);
-}
-function test()
-{
-  alert("announce");
+xmlhttp.send();
 }
 
-function announce(frm)
+
+function announce()
 {
-  alert("announce");
-var confArr = [];
-//var checkboxes = new Array(); 
-  //checkboxes = document["input"].getElementsByTagName('checkboxes');
- // alert(frm.checkboxes.length);
-  for (i = 0; i < frm.checkboxes.length; i++)
-  {
-    if (frm.checkboxes[i].checked)
-      {
-        var conftext= document.getElementById(frm.checkboxes[i].id+"_conf");
-        //alert(conftext.value);
-         confArr.push({mux: frm.checkboxes[i].id,
-                      data: conftext.value
-                      });
-      }
-  }
- var e = document.getElementById("plevel");
-var level = e.options[e.selectedIndex].value;
-  var juser ={username :usernamel,configuration:confArr,password:passwordl,priority:level };
-  //alert(confArr[0]["mux"]);
-  //alert(juser["username"]);
 //alert(document.getElementById("GATECH").checked);
 var xmlhttp;
 if (window.XMLHttpRequest)
@@ -214,56 +57,51 @@ else
   {// code for IE6, IE5
   xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
   }
-  
+  var list = document.getElementById('tid');
 xmlhttp.onreadystatechange=function()
   {
   if (xmlhttp.readyState==4 && xmlhttp.status==200)
     {
-        // alert(xmlhttp.responseText);
-        var resl=xmlhttp.responseText;
-        var arrl=resl.split(",");
-        //alert(arrl[0]);
-        //var lenl=arrl.length;
-          if(arrl[0] != "None")
-          {
-              var list = document.getElementById('tid');
-              var entry = document.createElement('li');
-              var txt=arrl[0];
-              for(var i=1;i<arrl.length;i++)
-              {
-                txt=txt+","+arrl[i];
-              }
-              entry.appendChild(document.createTextNode(txt));
-              list.appendChild(entry);
-          }
-          /*json = eval("(" + data + ")");
+    
+          var data=xmlhttp.responseText;
+          json = eval("(" + data + ")");
           if(json.transid != "None")
             {
             var entry = document.createElement('li');
             entry.appendChild(document.createTextNode(json.transid));
             list.appendChild(entry);
-            }*/
+            }
 
 
-          //alert(json.message);
-           
+         // alert(json);
+          
+          //eval(json);
+          //alert(json.transid);
+          alert(json.message);
+            //document.getElementById("loginbody").style.display = "none";
+            //document.getElementById("announce").style.display="inline-block";
+
 
     }
 }
-
-//var parameter='{"username":"'+username+'","password":"'+password+'"}';
-xmlhttp.open("POST","http://localhost:5000/beacon",true);
-//xmlhttp.open("GET",ajaxstr,true);
+var ajaxstr="http://localhost/announce.php?username=" + username + "&password=" + password+"&GATECH="+document.getElementById("GATECH").checked;
+ajaxstr=ajaxstr+"&WISC="+document.getElementById("WISC").checked;
+ajaxstr=ajaxstr+"&CLEMSON="+document.getElementById("CLEMSON").checked;
+ajaxstr=ajaxstr+"&PRINCE="+document.getElementById("PRINCE").checked;
+ajaxstr=ajaxstr+"&UW="+document.getElementById("UW").checked;
+ajaxstr=ajaxstr+"&AMSIX="+document.getElementById("AMSIX").checked;
+ajaxstr=ajaxstr+"&ISI="+document.getElementById("ISI").checked;
+ajaxstr=ajaxstr+"&group="+document.getElementById("selectbasic").value;
+//alert(ajaxstr);
+xmlhttp.open("GET",ajaxstr,true);
 //alert(username);
-//alert(JSON.stringify(juser));
-//alert(juser);
-xmlhttp.send(JSON.stringify(juser));
+xmlhttp.send();
 
 
 }
-$(document).ready(function () {
-  $('#table').on("click", "#tid li",function(){ 
-    //alert("test"+$(this).text()); 
+
+ $('#tid li').live('click', function ()
+{
     var selected = $(this).text();
     //alert("List Item: " + selected);
     var xmlhttp;
@@ -283,52 +121,12 @@ xmlhttp.onreadystatechange=function()
       alert(xmlhttp.responseText);
     }
   }
-  var arr1=selected.split(",");
-  var tid=arr1[0];
-xmlhttp.open("POST","http://localhost:5000/beacon_check",true);
-var juser ={username :usernamel,TID:tid,password:passwordl };
-//var ajaxstr="http://localhost/check.php?transid="+selected;
-//xmlhttp.open("GET",ajaxstr,true);
-xmlhttp.send(JSON.stringify(juser));
+var ajaxstr="http://localhost/check.php?transid="+selected;
+xmlhttp.open("GET",ajaxstr,true);
+xmlhttp.send();
 
 
-
-  });
-          
-        });
-
-
-
-//
-
- /*$('#tid li').on('click', function ()
-{
-    var selected = $(this).text();
-    alert("List Item: " + selected);
-    var xmlhttp;
-if (window.XMLHttpRequest)
-  {// code for IE7+, Firefox, Chrome, Opera, Safari
-  xmlhttp=new XMLHttpRequest();
-  }
-else
-  {// code for IE6, IE5
-  xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
-  }
-  var list = document.getElementById('tid');
-xmlhttp.onreadystatechange=function()
-  {
-  if (xmlhttp.readyState==4 && xmlhttp.status==200)
-    {
-      alert(xmlhttp.responseText);
-    }
-  }
-//xmlhttp.open("POST","http://localhost:5000/beacon_check",true);
-//var ajaxstr="http://localhost/check.php?transid="+selected;
-//xmlhttp.open("GET",ajaxstr,true);
-//xmlhttp.send();
-
-
-});*/
+});
 
 
 </script>
@@ -350,7 +148,7 @@ xmlhttp.onreadystatechange=function()
             <div id="logon">
             <div id="myTabContent" class="tab-content">
                 <div class="tab-pane active in" id="login">
-                    <form class="form-horizontal" action='beacon' method="POST">
+                    <form class="form-horizontal" action='' method="POST">
                         <fieldset>
                                 
                             <div class="control-group">
@@ -388,64 +186,59 @@ xmlhttp.onreadystatechange=function()
         </div>
     </div>
 
-    <div id="announce" >
-<form name="input" action="" method="">
+    <div id="announce">
+<form name="input" action="announce.php" method="get">
         
 <fieldset>
 
 <!-- Form Name -->
 <legend>announce</legend>
 
+<!-- Select Basic -->
+<div class="control-group">
+  <label class="control-label" for="selectbasic">Select Group</label>
+  <div class="controls">
+    <select id="selectbasic" name="selectbasic" class="input-xlarge">
+      <option>Normal users</option>
+      <option>Research</option>
+    </select>
+  </div>
+</div>
 
 <!-- Multiple Checkboxes (inline) -->
-<div class="control-group" >
-  <label class="control-label" for="checkboxes">Configuration</label>
-  <div class="controls" >
+<div class="control-group">
+  <label class="control-label" for="checkboxes">Inline Checkboxes</label>
+  <div class="controls">
     <label class="checkbox inline" for="checkboxes-0">
-      <input name="checkboxes" id="GATECH" value="GATECH" type="checkbox" onclick="showHide()">
-        GATECH
-         <input type="text" id="GATECH_conf" >
+      <input name="checkboxes" id="GATECH" value="GATECH" type="checkbox">
+      GATECH
     </label>
-   
-
-    <br>
     <label class="checkbox inline" for="checkboxes-1">
-      <input name="checkboxes" id="WISC" value="WISC" type="checkbox" onclick="showHide()">
-        WISC
-        <input type="text" id="WISC_conf" >
+      <input name="checkboxes" id="WISC" value="WISC" type="checkbox">
+      WISC
     </label>
-    
-    <br>
     <label class="checkbox inline" for="checkboxes-2">
-      <input name="checkboxes" id="CLEMSON" value="CLEMSON" type="checkbox" onclick="showHide()">
-        CLEMSON
-        <input type="text" id="CLEMSON_conf" >
+      <input name="checkboxes" id="CLEMSON" value="CLEMSON" type="checkbox">
+      CLEMSON
     </label>
-    <br>
     <label class="checkbox inline" for="checkboxes-3">
-      <input name="checkboxes" id="PRINCE" value="PRINCE" type="checkbox" onclick="showHide()">
-        PRINCE
-        <input type="text" id="PRINCE_conf" >
+      <input name="checkboxes" id="PRINCE" value="PRINCE" type="checkbox">
+      PRINCE
     </label>
-    <br>
-    <label class="checkbox inline" for="checkboxes-4">
-      <input name="checkboxes" id="UW" value="UW" type="checkbox" onclick="showHide()">
-      UW
-      <input type="text" id="UW_conf" >
+<label class="checkbox inline" for="checkboxes-4">
+      <input name="checkboxes" id="UW" value="UW" type="checkbox">
+    UW
     </label>
-    <br>
-    <label class="checkbox inline" for="checkboxes-5">
-      <input name="checkboxes" id="AMSIX" value="AMSIX" type="checkbox" onclick="showHide()">
-      AMSIX
-      <input type="text" id="AMSIX_conf" >
+<label class="checkbox inline" for="checkboxes-5">
+      <input name="checkboxes" id="AMSIX" value="AMSIX" type="checkbox">
+    AMSIX
     </label>
-    <br>
-    <label class="checkbox inline" for="checkboxes-6">
-      <input name="checkboxes" id="ISI" value="ISI" type="checkbox" onclick="showHide()">
-      ISI
-      <input type="text" id="ISI_conf" >
+
+<label class="checkbox inline" for="checkboxes-6">
+      <input name="checkboxes" id="ISI" value="ISI" type="checkbox">
+    ISI
     </label>
-    
+
 
 
   </div>
@@ -455,13 +248,13 @@ xmlhttp.onreadystatechange=function()
 <div class="control-group">
   
   <div class="controls">
-    Priority level:<select id="plevel"></select><br>
-    <button type="button" id="singlebutton" name="singlebutton" class="btn btn-primary" onclick="announce(this.form)">Announce</button>
+    <button type="button" id="singlebutton" name="singlebutton" class="btn btn-primary" onclick="announce()">Announce</button>
   </div>
 </div>
 
 </fieldset>
 </form>
+
 
 
 
