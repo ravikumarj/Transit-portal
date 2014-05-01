@@ -148,9 +148,10 @@ while True:
     # process connections from clients
     (clientSocket, address) = serversocket.accept()
     while True:
-        req = clientSocket.recv(100)
+        req = clientSocket.recv(1024) # Maximum size of a configuration Message ! Assumption
         if not req: break # client closed connection
-        msg = req.split()
+        msg = req.split(" ")
+        print "msg received from scheduler -->"+req
         if msg[0] == 'announce' or msg[0] == 'research':
             pfx=getfree_pfx()
 	    mux=msg[1]
