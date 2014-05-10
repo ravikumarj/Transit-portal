@@ -46,7 +46,7 @@ def announce(prefix, mux, homeasn=HOMEASN): # {{{
 # }}}
 def poison(prefix, mux, poisonv, homeasn=HOMEASN): # {{{
 	mux = mux.upper()
-	prefix=int(prefix)
+	#prefix=int(prefix)
 	print "MUX --> "+mux	
 	assert mux in MUX2IP
 	#assert prefix in PREFIXES
@@ -58,7 +58,7 @@ def poison(prefix, mux, poisonv, homeasn=HOMEASN): # {{{
 	prepend_string = poisonv
 	# prepend_string = '%s %d' % (poison_string, homeasn)
 	cmd = 'vtysh -d bgpd -c "config terminal" '
-	cmd += '-c "route-map %s permit %d" ' % (mux, prefix)
+	cmd += '-c "route-map %s permit %s" ' % (mux, prefix)
 	cmd += '-c "set as-path prepend %s"' % prepend_string
 	reliable_exec(cmd, 3)
 	_prefix_up(prefix, mux, prepend_string)
@@ -70,7 +70,7 @@ def poison(prefix, mux, poisonv, homeasn=HOMEASN): # {{{
 
 def unpoison(prefix, mux): # {{{
 	mux = mux.upper()
-	prefix=int(prefix)
+	#prefix=int(prefix)
 	assert mux in MUX2IP
 	#assert prefix in PREFIXES
 	# tstamp = int(time.time())
@@ -84,14 +84,14 @@ def unpoison(prefix, mux): # {{{
 
 def withdraw(prefix, mux): # {{{
 	mux = mux.upper()
-	prefix=int(prefix)
+	#prefix=int(prefix)
 	assert mux in MUX2IP
 	#assert prefix in PREFIXES
 	_reset_route_map(prefix, mux)
 	# tstamp = int(time.time())
 	logging.info('prefix down %d %s', prefix, mux)
 	cmd = 'vtysh -d bgpd -c "config terminal" '
-	cmd += '-c "route-map %s permit %d" ' % (mux, prefix)
+	cmd += '-c "route-map %s permit %s" ' % (mux, prefix)
 	cmd += '-c "match ip address prefix-list NONET"'
 	reliable_exec(cmd, 3)
 	soft_reset(mux)
@@ -142,7 +142,7 @@ def deploy(prefix, pfxannounce):#{{{
 def _prefix_up(prefix, mux, message): # {{{
 	logging.info('prefix up %d %s %s', prefix, mux, message)
 	cmd = 'vtysh -d bgpd -c "config terminal" '
-	cmd += '-c "route-map %s permit %d" ' % (mux, prefix)
+	cmd += '-c "route-map %s permit %s" ' % (mux, prefix)
 	cmd += '-c "match ip address prefix-list NET-%s"' % prefix
 	reliable_exec(cmd, 3)
 # }}}
@@ -151,7 +151,7 @@ def _prefix_up(prefix, mux, message): # {{{
 def _reset_route_map(prefix, mux): # {{{
 	# logging.info('resetting route-map %s permit %d', mux, prefix)
 	cmd = 'vtysh -d bgpd -c "config terminal" '
-	cmd += '-c "route-map %s permit %d" ' % (mux, prefix)
+	cmd += '-c "route-map %s permit %s" ' % (mux, prefix)
 	cmd += '-c "set as-path prepend 1" '
 	cmd += '-c "no set as-path prepend"'
 	reliable_exec(cmd, 3)
