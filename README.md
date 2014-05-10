@@ -40,10 +40,10 @@ Configuration Message should be specified in JSON format with key value pairs.
 
 
 where 
-*username & password are authentication information.
-*configuration is a json Array and can include any number of MUXES through which user wishes to make announcement.
-*mux includes MUX names through which user wishes to make announcements.
-*data includes AS numbers which uses wishes to poison.data can also include withdraw which enables users to announce from one MUX and 
+*username & password are authentication information.                                                                                        
+*configuration is a json Array and can include any number of MUXES through which user wishes to make announcement.                          
+*mux includes MUX names through which user wishes to make announcements.                                                                    
+*data includes AS numbers which uses wishes to poison.data can also include withdraw which enables users to announce from one MUX and       
     withdraw the same prefix from different MUX. data can also be empty in which it won't poison any AS during announcement.
 *priority : As specified in above sections it can include values from 1-10 and if not specified scheduler will use default values.
 
