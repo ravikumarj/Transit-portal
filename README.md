@@ -1,20 +1,9 @@
 Beacon
 ======
 
-Introduction:               
-
-Transit Portal (TP) is a system that enables controlled access for researchers and educators to the Internet routing system.
-To experiment with novel routing ideas or to understand aspects of the current routing ecosystem, researchers need the ability 
-to actively participate in this ecosystem by emulating an autonomous system (AS). The Transit Portal testbed solves this problem 
-for the researchers. The testbed can multiplex multiple simultaneous research experiments, each of which independently makes routing 
-decisions and sends and receives traffic. The Transit Portal (TP) allows researchers to announce IP prefix from predefined pool of 
-allowed prefixes. The testbed essentially functions as a full-fledged participant in interdomain Internet routing.
-
 At present to run simple experiment Transit Portal requires significant manual configuration which includes having openvpn tunnel 
-connection to the MUXES(border routers) from where we intend to announce our prefixes.There are currently 7 of these Points of Presence 
-for the TP system, 6 spread out in the US and one in Amsterdam.We propose to have Beacon which will be pre configured with openvpn 
-tunnels to all the available MUXES and have Beacon client which will allow researchers to make announcement through the Beacon Server.
-This improves openness of the Transit portal which is currently used only be select group of people
+connection to the MUXES(border routers) from where we intend to announce our prefixes.
+We propose to have Beacon which will be pre configured with openvpn tunnels to all the available MUXES and have Beacon client which will allow researchers to make announcement through the Beacon Server.This improves openness of the Transit portal which is currently used only be select group of people
 
 Client:
 
@@ -65,7 +54,7 @@ Multiple AS numbers to be prepended/ poisoned can be separated with comma.
 To check announcement schedule  with announcement ID 12345 
 python client_rpc.py -c -t 12345 -u ravi -p test       
 
-To Do: (Features that are planned to be included in Beacon)                                                                                                                                                                                                                                    
+To Do: (Features that are planned to be included in Beacon)                                                                                                                                                                                                                                   
 *Get available MUX from TP database at runtime .                                                                                            *Capability to add prefix dynamically by the user and uses the prefix for experiment.                                                       *Configure an SMTP server for the email messages to be sent via instead of localhost SMTP service.
 
 
