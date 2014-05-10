@@ -55,6 +55,8 @@ To check announcement schedule  with announcement ID 12345
 python client_rpc.py -c -t 12345 -u ravi -p test       
 
 To Do: (Features that are planned to be included in Beacon)                                                                                                                                                                                                                                   
-*Get available MUX from TP database at runtime .                                                                                            *Capability to add prefix dynamically by the user and uses the prefix for experiment.                                                       *Configure an SMTP server for the email messages to be sent via instead of localhost SMTP service.
+*Get available MUX from TP database at runtime .                                                                                            
+*Configure an SMTP server for the email messages to be sent via instead of localhost SMTP service.
+**Testing with other IP address and defining a generalised procedure for adding new IP address in quagga configuration File .
 
 
