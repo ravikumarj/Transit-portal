@@ -43,8 +43,7 @@ where
 *username & password are authentication information.                                                                                        
 *configuration is a json Array and can include any number of MUXES through which user wishes to make announcement.                          
 *mux includes MUX names through which user wishes to make announcements.                                                                    
-*data includes AS numbers which uses wishes to poison.data can also include withdraw which enables users to announce from one MUX and       
-    withdraw the same prefix from different MUX. data can also be empty in which it won't poison any AS during announcement.
+*data includes AS numbers which uses wishes to poison.data can also include withdraw which enables users to announce from one MUX and                  withdraw the same prefix from different MUX. data can also be empty in which it won't poison any AS during announcement.
 *priority : As specified in above sections it can include values from 1-10 and if not specified scheduler will use default values.
 
 Usage of the client script:
@@ -66,13 +65,7 @@ Multiple AS numbers to be prepended/ poisoned can be separated with comma.
 To check announcement schedule  with announcement ID 12345 
 python client_rpc.py -c -t 12345 -u ravi -p test       
 
-To Do: (Features that are planned to be included in Beacon)
-
-Get available MUX from TP database at runtime
-      Currently Beacon reads available MUXES from a config file which has no ties with actual available MUXES.
-      Server needs to modified such that it reads directly from TP database at runtime. Strategy for that would be check TP database
-      every 30 minutes or so to get available Site information
-Capability to add prefix dynamically by the user and uses the prefix for experiment.
-Configure an SMTP server for the email messages to be sent via instead of localhost SMTP service.
+To Do: (Features that are planned to be included in Beacon)                                                                                                                                                                                                                                    
+Get available MUX from TP database at runtime                                                                                                          Currently Beacon reads available MUXES from a config file which has no ties with actual available MUXES.                                       Server needs to modified such that it reads directly from TP database at runtime. Strategy for that would be check TP database                 every 30 minutes or so to get available Site information.                                                                                                                                                                                                                      Capability to add prefix dynamically by the user and uses the prefix for experiment.                                                        Configure an SMTP server for the email messages to be sent via instead of localhost SMTP service.
 
 
