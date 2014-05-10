@@ -2,7 +2,7 @@ import socket
 import signal
 import sys
 import os
-import ctrlpfx_new
+import ctrlpfx
 import MySQLdb as mdb
 from multiprocessing import Process
 import smtplib
@@ -46,22 +46,22 @@ def Announce(pfx,mux):
                 	poison=poison+asn[i]+" "
 		if len(asn) == 1:
 			if poison.strip() == "withdraw":
-				ctrlpfx_new.withdraw(pfx,mux) #pfx,MUX
+				ctrlpfx.withdraw(pfx,mux) #pfx,MUX
 			elif poison.strip() == "unpoison":
-                                ctrlpfx_new.unpoison(pfx,mux)
+                                ctrlpfx.unpoison(pfx,mux)
 			else:
 			        poison=poison+"47065"
 	                        print "poisoning " +poison
 				print "Mux" + mux
-       	                        ctrlpfx_new.poison(pfx,mux,poison)
+       	                        ctrlpfx.poison(pfx,mux,poison)
 
 		else:
 			poison=poison+"47065"
 			print "poisoning " +poison
 			print "Mux " + mux +","
-			ctrlpfx_new.poison(pfx,mux,poison)
+			ctrlpfx.poison(pfx,mux,poison)
 	else:
-		ctrlpfx_new.announce(pfx,mux)
+		ctrlpfx.announce(pfx,mux)
         	print "Announing "+mux
 
         #getUniqueId();
@@ -148,7 +148,7 @@ while True:
     # process connections from clients
     (clientSocket, address) = serversocket.accept()
     while True:
-        req = clientSocket.recv(1024) # Maximum size of a configuration Message ! Assumption
+        req = clientSocket.recv(2048) # Maximum size of a configuration Message ! Assumption
         if not req: break # client closed connection
         msg = req.split(" ")
         print "msg received from scheduler -->"+req
@@ -199,6 +199,6 @@ while True:
         if msg[0] == 'poison':
 	    print 'Poisoning'
 	    if msg[1] is not None and msg[2] is not None:
-	    	ctrlpfx_new.poison(int(msg[1]),msg[2]) 
+	    	ctrlpfx.poison(int(msg[1]),msg[2]) 
             #updateDB(int(msg[1]))
     clientSocket.close()
